@@ -27,31 +27,107 @@ export function saveReservations(reservations: Reservation[]): void {
     console.error('Failed to save reservations to localStorage:', error);
   }
 }
+export async function addReservation(reservation: Omit<Reservation, 'id'>): Promise<Reservation | null> {
+  try {
+      // 1️⃣ Récupérer toutes les réservations existantes
+      const existingReservationsResponse = await fetch('http://localhost:5001/reservations');
+      if (!existingReservationsResponse.ok) throw new Error('Erreur lors de la récupération des réservations.');
 
-export function addReservation(reservation: Reservation): void {
-  const reservations = loadReservations();
-  reservations.push(reservation);
-  saveReservations(reservations);
-}
+      const existingReservations: Reservation[] = await existingReservationsResponse.json();
 
-export function updateReservation(updatedReservation: Reservation): void {
-  const reservations = loadReservations();
-  const index = reservations.findIndex(r => r.id === updatedReservation.id);
-  
-  if (index !== -1) {
-    reservations[index] = updatedReservation;
-    saveReservations(reservations);
+      // 2️⃣ Vérifier si une réservation existe déjà pour le même créneau
+      const conflict = existingReservations.some(r =>
+          r.roomId === reservation.roomId &&
+          r.date === reservation.date &&
+          timeToMinutes(r.startTime) < timeToMinutes(reservation.endTime) &&
+          timeToMinutes(r.endTime) > timeToMinutes(reservation.startTime)
+      );
+
+      if (conflict) {
+          alert("⛔ Cette salle est déjà réservée pour ce créneau. Veuillez choisir un autre horaire.");
+          return null; // Annule la réservation
+      }
+
+      // 3️⃣ Envoi de la réservation à `json-server` pour sauvegarde
+      const response = await fetch('http://localhost:5001/reservations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reservation),
+      });
+
+      if (!response.ok) {
+          throw new Error(`Erreur lors de la sauvegarde: ${response.statusText}`);
+      }
+
+      // 4️⃣ Récupération de la réservation confirmée par le serveur
+      const savedReservation = await response.json();
+
+      // 5️⃣ Ajout de la réservation dans `localStorage`
+      saveReservationLocally(savedReservation);
+
+      return savedReservation;
+  } catch (error) {
+      alert(`❌ Une erreur est survenue lors de l'ajout de la réservation car une reservation existe deja un creneau`);
+      console.error('❌ Erreur lors de l’ajout de la réservation:', error);
+      return null;
   }
 }
 
-export function deleteReservation(id: number): void {
-  const reservations = loadReservations();
-  const filteredReservations = reservations.filter(r => r.id !== id);
-  
-  if (filteredReservations.length < reservations.length) {
-    saveReservations(filteredReservations);
+
+// ✅ Fonction utilitaire pour convertir une heure en minutes
+function timeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+// ✅ Fonction pour sauvegarder la réservation dans `localStorage`
+function saveReservationLocally(reservation: Reservation): void {
+  try {
+      const storedData = localStorage.getItem('reservations');
+      const reservations: Reservation[] = storedData ? JSON.parse(storedData) : [];
+      reservations.push(reservation);
+
+      localStorage.setItem('reservations', JSON.stringify(reservations));
+      console.log('✅ Réservation ajoutée à localStorage.');
+  } catch (error) {
+      console.error('❌ Erreur lors de la sauvegarde dans localStorage:', error);
   }
 }
+
+
+// ✅ Fonction pour sauvegarder la réservation dans `localStorage`
+
+
+
+
+export async function updateReservation(updatedReservation: Reservation): Promise<void> {
+  try {
+      const response = await fetch(`http://localhost:5001/reservations/${updatedReservation.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedReservation),
+      });
+
+      if (!response.ok) throw new Error(`Erreur lors de la mise à jour: ${response.statusText}`);
+  } catch (error) {
+      console.error('❌ Erreur lors de la mise à jour de la réservation:', error);
+  }
+}
+
+export async function deleteReservation(id: number): Promise<void> {
+  try {
+      const response = await fetch(`http://localhost:5001/reservations/${id}`, {
+          method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error(`Erreur lors de la suppression: ${response.statusText}`);
+
+      console.log(`✅ Réservation ${id} supprimée avec succès.`);
+  } catch (error) {
+      console.error('❌ Erreur lors de la suppression de la réservation:', error);
+  }
+}
+
 
 // Functions for user name persistence
 export function saveUserName(name: string): void {
@@ -119,16 +195,34 @@ export function filterRooms(
 }
 
 // Function to get reservations for a specific room
-export function getReservationsForRoom(roomId: number): Reservation[] {
-  const reservations = loadReservations();
-  return reservations.filter(r => r.roomId === roomId);
+export async function getReservationsForRoom(roomId: number): Promise<Reservation[]> {
+  try {
+      const response = await fetch('http://localhost:5001/reservations');
+      if (!response.ok) throw new Error('Erreur lors de la récupération des réservations.');
+
+      const reservations: Reservation[] = await response.json();
+      return reservations.filter(r => r.roomId === roomId);
+  } catch (error) {
+      console.error('❌ Erreur lors de la récupération des réservations:', error);
+      return [];
+  }
 }
 
+
 // Function to get reservations for a specific date
-export function getReservationsForDate(date: string): Reservation[] {
-  const reservations = loadReservations();
-  return reservations.filter(r => r.date === date);
+export async function getReservationsForDate(date: string): Promise<Reservation[]> {
+  try {
+      const response = await fetch('http://localhost:5001/reservations');
+      if (!response.ok) throw new Error('Erreur lors de la récupération des réservations.');
+
+      const reservations: Reservation[] = await response.json();
+      return reservations.filter(r => r.date === date);
+  } catch (error) {
+      console.error('❌ Erreur lors de la récupération des réservations:', error);
+      return [];
+  }
 }
+
 
 // Function to initialize sample data if needed
 export function initializeData(): void {

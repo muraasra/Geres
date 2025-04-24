@@ -1,0 +1,111 @@
+{
+  "rooms": [
+    {
+      "id": 1,
+      "name": "Salle vineau de losa Yaoundé",
+      "capacity": 20,
+      "equipmentIds": [
+        1,
+        2,
+        5,
+        6
+      ],
+      "image": "https://th.bing.com/th/id/OIP.UpJ3M3ljVJqiLO_kRA8OOAHaE8?w=198&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7",
+      "description": "Grande salle lumineuse idéale pour les conferences ou les présentations clients.",
+      "pricePerHour": 5000
+    },
+    {
+      "id": 2,
+      "name": "Salle conference bamendzi",
+      "capacity": 30,
+      "equipmentIds": [
+        2,
+        5,
+        8
+      ],
+      "image": "https://th.bing.com/th/id/OPHS.dg1FIVSibbx4xw474C474?o=5&pid=21.1&w=160&h=160&dpr=1.3",
+      "description": "Salle de taille moyenne parfaite pour les réunions intimes ou les entretiens.",
+      "pricePerHour": 30000
+    },
+    {
+      "id": 3,
+      "name": "Salle Afamba Biyem-assi",
+      "capacity": 30,
+      "equipmentIds": [
+        1,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "image": "https://th.bing.com/th/id/OIP.j5U5byQSpYL_at4QrHxG9gHaEK?w=280&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7",
+      "description": "Notre plus grande salle, équipée de technologies de pointe pour des conférences et formations.",
+      "pricePerHour": 8000
+    },
+    {
+      "id": 4,
+      "name": "Salle Delta",
+      "capacity": 10,
+      "equipmentIds": [
+        5,
+        6
+      ],
+      "image": "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg",
+      "description": "Petite salle confortable pour des réunions de travail ou des appels privés.",
+      "pricePerHour": 25000
+    },
+    {
+      "id": 5,
+      "name": "Salle Conference De Douala",
+      "capacity": 55,
+      "equipmentIds": [
+        1,
+        2,
+        4,
+        5,
+        8
+      ],
+      "image": "https://th.bing.com/th/id/OIP.UzXh0mPvTFE0UlFURWd_swHaFj?w=238&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7",
+      "description": "Salle polyvalentep équipée our les reunions de grandes equipes.",
+      "pricePerHour": 4500
+    },
+    {
+      "id": 6,
+      "name": "Salle Zêta",
+      "capacity": 15,
+      "equipmentIds": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "image": "https://images.pexels.com/photos/1170412/pexels-photo-1170412.jpeg",
+      "description": "Espace moderne et épuré pour des réunions professionnelles efficaces.",
+      "pricePerHour": 55000
+    },
+    {
+      "id": "07ea",
+      "name": "Test project 2",
+      "capacity": 20,
+      "description": "ma sale",
+      "image": "https://portfoliotayou.vercel.app/_next/image?url=%2Fimages%2Favatar.jpg&w=256&q=75",
+      "equipmentIds": [
+        3
+      ],
+      "pricePerHour": 6000
+    },
+    {
+      "id": "2f1e",
+      "name": "Test project 2",
+      "capacity": 20,
+      "description": "ma salle",
+      "image": "https://portfoliotayou.vercel.app/_next/image?url=%2Fimages%2Favatar.jpg&w=256&q=75",
+      "equipmentIds": [
+        2
+      ],
+      "pricePerHour": 6000
+    }
+  ]
+}

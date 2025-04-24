@@ -1,0 +1,10 @@
+[
+    { "id": 1, "name": "Projecteur" },
+    { "id": 2, "name": "Tableau blanc" },
+    { "id": 3, "name": "Écran TV" },
+    { "id": 4, "name": "Système de visioconférence" },
+    { "id": 5, "name": "WiFi haut débit" },
+    { "id": 6, "name": "Climatisation" },
+    { "id": 7, "name": "Tables modulables" },
+    { "id": 8, "name": "Paperboard" }
+  ]

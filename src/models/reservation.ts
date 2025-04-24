@@ -2,63 +2,93 @@ export interface Reservation {
   id: number;
   roomId: number;
   userName: string;
-  date: string; // Format: YYYY-MM-DD
-  startTime: string; // Format: HH:MM
-  endTime: string; // Format: HH:MM
-  createdAt: string; // ISO string
+  date: string; // Format : YYYY-MM-DD
+  startTime: string; // Format : HH:MM
+  endTime: string; // Format : HH:MM
+  createdAt: string; // Chaîne ISO
 }
 
-// Validation functions
-export function isValidReservation(reservation: Reservation): boolean {
-  // Check if all required fields exist
-  if (!reservation.roomId || !reservation.userName || !reservation.date || 
-      !reservation.startTime || !reservation.endTime) {
-    return false;
-  }
+// Fonctions de validation
+export async function isValidReservation(reservation: Reservation): Promise<boolean> {
+  try {
+      // 1️⃣ Vérifier que tous les champs requis existent
+      if (!reservation.roomId || !reservation.userName || !reservation.date || 
+          !reservation.startTime || !reservation.endTime) {
+          alert("⛔ Tous les champs sont obligatoires !");
+          return false;
+      }
 
-  // Check if start time is before end time
-  const startDateTime = new Date(`${reservation.date}T${reservation.startTime}`);
-  const endDateTime = new Date(`${reservation.date}T${reservation.endTime}`);
-  if (startDateTime >= endDateTime) {
-    return false;
-  }
+      // 2️⃣ Vérifier que l'heure de début est avant l'heure de fin
+      const startDateTime = new Date(`${reservation.date}T${reservation.startTime}`);
+      const endDateTime = new Date(`${reservation.date}T${reservation.endTime}`);
+      if (startDateTime >= endDateTime) {
+          alert("⛔ L'heure de début doit être avant l'heure de fin !");
+          return false;
+      }
 
-  // Check if date is not in the past
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const reservationDate = new Date(reservation.date);
-  reservationDate.setHours(0, 0, 0, 0);
-  if (reservationDate < today) {
-    return false;
-  }
+      // 3️⃣ Vérifier que la date n'est pas dans le passé
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const reservationDate = new Date(reservation.date);
+      reservationDate.setHours(0, 0, 0, 0);
+      if (reservationDate < today) {
+          alert("⛔ Impossible de réserver une date passée !");
+          return false;
+      }
 
-  return true;
+      // 4️⃣ Vérifier si une réservation existe exactement au même créneau
+      const response = await fetch('http://localhost:5001/reservations');
+      if (!response.ok) throw new Error('Erreur lors de la récupération des réservations.');
+
+      const existingReservations: Reservation[] = await response.json();
+
+      const conflict = existingReservations.some(r =>
+          r.roomId === reservation.roomId &&
+          r.date === reservation.date &&
+          r.startTime === reservation.startTime && // Vérification stricte
+          r.endTime === reservation.endTime        // Vérification stricte
+      );
+
+      if (conflict) {
+          alert("⛔ Ce créneau est déjà pris ! Choisissez une autre heure.");
+          return false;
+      }
+
+      return true; // ✅ La réservation est valide
+  } catch (error) {
+      alert(`❌ Une erreur est survenue lors de la vérification de la réservation car la salle est deja prise par moi !!!`);
+      console.error('❌ Erreur lors de la vérification de la réservation:', error);
+      return false;
+  }
 }
+
+
+
 
 export function hasConflict(
   reservations: Reservation[], 
   newReservation: Reservation
 ): boolean {
-  // Skip comparing with itself (for editing)
+  // Ignore la comparaison avec elle-même (pour l'édition)
   const existingReservations = reservations.filter(r => r.id !== newReservation.id);
   
   return existingReservations.some(existing => {
-    // Only check reservations for the same room and date
+    // Vérifie uniquement les réservations pour la même salle et la même date
     if (existing.roomId !== newReservation.roomId || existing.date !== newReservation.date) {
       return false;
     }
     
-    // Parse times as Date objects for easier comparison
+    // Analyse les heures en tant qu'objets Date pour une comparaison plus facile
     const existingStart = new Date(`${existing.date}T${existing.startTime}`);
     const existingEnd = new Date(`${existing.date}T${existing.endTime}`);
     const newStart = new Date(`${newReservation.date}T${newReservation.startTime}`);
     const newEnd = new Date(`${newReservation.date}T${newReservation.endTime}`);
     
-    // Check for overlap
-    // Case 1: New reservation starts during an existing reservation
-    // Case 2: New reservation ends during an existing reservation
-    // Case 3: New reservation completely contains an existing reservation
-    // Case 4: New reservation is completely contained within an existing reservation
+    // Vérifie les chevauchements
+    // Cas 1 : La nouvelle réservation commence pendant une réservation existante
+    // Cas 2 : La nouvelle réservation se termine pendant une réservation existante
+    // Cas 3 : La nouvelle réservation contient complètement une réservation existante
+    // Cas 4 : La nouvelle réservation est complètement contenue dans une réservation existante
     return (
       (newStart >= existingStart && newStart < existingEnd) || 
       (newEnd > existingStart && newEnd <= existingEnd) ||
@@ -68,7 +98,7 @@ export function hasConflict(
   });
 }
 
-// Function to generate a unique ID for new reservations
+// Fonction pour générer un ID unique pour les nouvelles réservations
 export function generateReservationId(existingReservations: Reservation[]): number {
   if (existingReservations.length === 0) {
     return 1;
@@ -76,7 +106,7 @@ export function generateReservationId(existingReservations: Reservation[]): numb
   return Math.max(...existingReservations.map(r => r.id)) + 1;
 }
 
-// Function to create a new reservation
+// Fonction pour créer une nouvelle réservation
 export function createReservation(
   roomId: number,
   userName: string,
@@ -96,11 +126,11 @@ export function createReservation(
   };
   
   if (!isValidReservation(newReservation)) {
-    throw new Error("Invalid reservation data");
+    throw new Error("Données de réservation invalides");
   }
   
   if (hasConflict(existingReservations, newReservation)) {
-    throw new Error("This reservation conflicts with an existing booking");
+    throw new Error("Cette réservation entre en conflit avec une réservation existante");
   }
   
   return newReservation;

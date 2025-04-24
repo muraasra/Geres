@@ -127,79 +127,81 @@ export function closeModal(): void {
 async function handleBookingSubmit(e: Event): Promise<void> {
   e.preventDefault();
   
-  // Get form values
+  // Récupérer les valeurs du formulaire
   const roomId = parseInt(roomIdInput.value, 10);
   const userName = userNameInput.value.trim();
   const date = bookingDateInput.value;
   const startTime = startTimeInput.value;
   const endTime = endTimeInput.value;
   
-  // Basic validation
+  // Vérification basique des champs obligatoires
   if (!roomId || !userName || !date || !startTime || !endTime) {
     showValidationMessage('Veuillez remplir tous les champs.', 'error');
     return;
   }
-  
+
   try {
     const room = getRoomById(roomId);
     if (!room) throw new Error("Salle non trouvée");
-    
+
     const totalPrice = calculatePrice(room, startTime, endTime);
-    
-    // Initialize Stripe payment
-    const stripe = await stripePromise;
-    if (!stripe) throw new Error("Erreur lors de l'initialisation du paiement");
-    
-    // Create a payment session (this would typically be done through your backend)
-    // For demo purposes, we'll simulate a successful payment
-    showValidationMessage('Traitement du paiement...', 'info');
-    
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Save the user name for future bookings
-    saveUserName(userName);
-    
-    // Get existing reservations
-    const reservations = loadReservations();
-    
-    // Create a new reservation
-    const newReservation = createReservation(
-      roomId,
-      userName,
-      date,
-      startTime,
-      endTime,
-      reservations
+
+    // Vérifier si la réservation est déjà existante
+    const response = await fetch('http://localhost:5001/reservations');
+    if (!response.ok) throw new Error('Erreur lors de la récupération des réservations.');
+
+    const existingReservations: Reservation[] = await response.json();
+
+    // Vérifier si la salle est déjà réservée à la même date, même heure de début et même heure de fin
+    const conflict = existingReservations.some(r =>
+      r.roomId === roomId &&
+      r.date === date &&
+      r.startTime === startTime &&
+      r.endTime === endTime
     );
-    
-    // Add to reservations
-    addReservation(newReservation);
-    
-    // Show success message
+    let test:boolean=false;
+    if (conflict) {
+      showValidationMessage("⛔ Cette salle est déjà réservée pour ce créneau. Veuillez choisir une autre heure.", 'error');
+      test=true;
+      return ;
+    }
+
+    // Simulation du paiement avec Stripe
+    showValidationMessage('Traitement du paiement...', 'info');
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Sauvegarder le nom de l'utilisateur pour les prochaines réservations
+    saveUserName(userName);
+
+    // Ajouter la réservation
+    const newReservation = { roomId, userName, date, startTime, endTime, createdAt: new Date().toISOString() };
+    await addReservation(newReservation);
+
+    // Afficher le message de confirmation
+    //if (test){
     showValidationMessage(
-      `Réservation confirmée pour ${room.name} le ${formatDateForDisplay(date)} 
-      de ${startTime.replace(':', 'h')} à ${endTime.replace(':', 'h')}.
-      Montant payé: ${totalPrice}Fcfa`,
+      `✅ Réservation confirmée pour ${room.name} le ${formatDateForDisplay(date)} de ${startTime} à ${endTime}. Montant payé: ${totalPrice} Fcfa.`,
       'success'
     );
-    
-    // Update reservations display if visible
+    //}
+
+    // Mettre à jour l'affichage des réservations si nécessaire
     const reservationsSection = document.getElementById('reservationsSection');
     if (reservationsSection && !reservationsSection.classList.contains('hidden')) {
       renderUserReservations();
     }
-    
-    // Clear form after 2 seconds and close modal
+
+    // Fermer le modal après 2 secondes
     setTimeout(() => {
       bookingFormElement.reset();
       closeModal();
     }, 2000);
-    
+
   } catch (error) {
     showValidationMessage((error as Error).message, 'error');
   }
 }
+
 
 // Validate that end time is after start time
 function validateTimeInputs(): void {
