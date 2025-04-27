@@ -2,6 +2,7 @@ export interface Reservation {
   id: number;
   roomId: number;
   userName: string;
+  phoneNumber: string; // Nouveau champ ajouté
   date: string; // Format : YYYY-MM-DD
   startTime: string; // Format : HH:MM
   endTime: string; // Format : HH:MM
@@ -110,6 +111,7 @@ export function generateReservationId(existingReservations: Reservation[]): numb
 export function createReservation(
   roomId: number,
   userName: string,
+  phoneNumber: string, // Nouveau champ ajouté
   date: string,
   startTime: string,
   endTime: string,
@@ -119,6 +121,7 @@ export function createReservation(
     id: generateReservationId(existingReservations),
     roomId,
     userName,
+    phoneNumber,
     date,
     startTime,
     endTime,

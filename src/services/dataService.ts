@@ -237,6 +237,8 @@ export function initializeData(): void {
         id: 1,
         roomId: 1,
         userName: "Jean Dupont",
+        phoneNumber: "+237632345678",
+
         date: "2025-03-15",
         startTime: "09:00",
         endTime: "11:00",
@@ -246,6 +248,8 @@ export function initializeData(): void {
         id: 2,
         roomId: 2,
         userName: "Marie Martin",
+        phoneNumber: "+237658345678",
+
         date: "2025-03-15",
         startTime: "14:00",
         endTime: "16:00",
@@ -255,6 +259,8 @@ export function initializeData(): void {
         id: 3,
         roomId: 3,
         userName: "Pierre Leclerc",
+        phoneNumber: "+237699345678",
+
         date: "2025-03-16",
         startTime: "10:00",
         endTime: "12:00",

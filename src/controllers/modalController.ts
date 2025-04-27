@@ -1,5 +1,5 @@
 import { getRoomById, calculatePrice } from '../data/rooms';
-import { createReservation, hasConflict, isValidReservation } from '../models/reservation';
+import { createReservation, hasConflict, isValidReservation, Reservation } from '../models/reservation';
 import { addReservation, getUserName, loadReservations, saveUserName } from '../services/dataService';
 import { formatDateForDisplay } from '../utils/dateUtils';
 import { renderUserReservations } from './reservationsController';
@@ -12,6 +12,7 @@ let bookingModalElement: HTMLElement;
 let bookingFormElement: HTMLFormElement;
 let roomIdInput: HTMLInputElement;
 let userNameInput: HTMLInputElement;
+let phoneNumberInput: HTMLInputElement;
 let bookingDateInput: HTMLInputElement;
 let startTimeInput: HTMLInputElement;
 let endTimeInput: HTMLInputElement;
@@ -25,6 +26,7 @@ export function initModalController(): void {
   bookingFormElement = document.getElementById('bookingForm') as HTMLFormElement;
   roomIdInput = document.getElementById('roomId') as HTMLInputElement;
   userNameInput = document.getElementById('userName') as HTMLInputElement;
+  phoneNumberInput = document.getElementById('phoneNumber') as HTMLInputElement;
   bookingDateInput = document.getElementById('bookingDate') as HTMLInputElement;
   startTimeInput = document.getElementById('startTime') as HTMLInputElement;
   endTimeInput = document.getElementById('endTime') as HTMLInputElement;
@@ -130,6 +132,7 @@ async function handleBookingSubmit(e: Event): Promise<void> {
   // Récupérer les valeurs du formulaire
   const roomId = parseInt(roomIdInput.value, 10);
   const userName = userNameInput.value.trim();
+  const phoneNumber = phoneNumberInput.value;
   const date = bookingDateInput.value;
   const startTime = startTimeInput.value;
   const endTime = endTimeInput.value;
@@ -160,8 +163,8 @@ async function handleBookingSubmit(e: Event): Promise<void> {
       r.endTime === endTime
     );
     let test:boolean=false;
-    if (conflict) {
-      showValidationMessage("⛔ Cette salle est déjà réservée pour ce créneau. Veuillez choisir une autre heure.", 'error');
+    if (conflict) {      showValidationMessage("⛔ Cette salle est déjà réservée pour ce créneau. Veuillez choisir une autre heure.", 'error');
+
       test=true;
       return ;
     }
@@ -174,7 +177,7 @@ async function handleBookingSubmit(e: Event): Promise<void> {
     saveUserName(userName);
 
     // Ajouter la réservation
-    const newReservation = { roomId, userName, date, startTime, endTime, createdAt: new Date().toISOString() };
+    const newReservation = { roomId, userName, phoneNumber, date, startTime, endTime, createdAt: new Date().toISOString() };
     await addReservation(newReservation);
 
     // Afficher le message de confirmation
